@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BA-Agent-X — Ask your business a question. Get a real answer.</title>
+<meta name="description" content="An AI business analyst that reads your sales and customer data and answers in plain English. No dashboards to build, no analyst to hire.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E1116;
+    --ink-soft:#161B22;
+    --ink-line: #262D38;
+    --paper:#EFEAE0;
+    --paper-line:#DCD5C6;
+    --brass:#C7963C;
+    --brass-bright:#E0B15C;
+    --teal:#3FB8A5;
+    --ink-text:#1B1F26;
+    --slate:#8B93A3;
+    --white:#FAF8F3;
+    --danger:#C0604C;
+    --radius: 3px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--white);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk', sans-serif;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+  img,svg{display:block;max-width:100%;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 28px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--brass-bright);
+  }
+
+  /* ── Nav ── */
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(14,17,22,0.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--ink-line);
+  }
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:600;font-size:17px;}
+  .logo-mark{
+    width:20px;height:20px;border:1.5px solid var(--brass-bright);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono';font-size:11px;color:var(--brass-bright);
+  }
+  .nav-links{display:flex;align-items:center;gap:32px;font-size:14.5px;color:var(--slate);}
+  .nav-links a{text-decoration:none;transition:color .15s;}
+  .nav-links a:hover{color:var(--white);}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:11px 20px;border-radius:var(--radius);
+    font-size:14.5px;font-weight:600;font-family:'IBM Plex Sans';
+    cursor:pointer;border:1px solid transparent;text-decoration:none;
+    transition:transform .12s ease, background .15s, border-color .15s;
+    white-space:nowrap;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-brass{background:var(--brass-bright);color:var(--ink);}
+  .btn-brass:hover{background:#EFC178;}
+  .btn-ghost{background:transparent;color:var(--white);border-color:var(--ink-line);}
+  .btn-ghost:hover{border-color:var(--brass-bright);color:var(--brass-bright);}
+  .btn-block{width:100%;}
+
+  /* ── Hero ── */
+  .hero{padding:92px 0 88px;position:relative;overflow:hidden;}
+  .hero::before{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(600px 300px at 85% -10%, rgba(199,150,60,0.14), transparent 60%),
+      radial-gradient(500px 260px at 10% 110%, rgba(63,184,165,0.10), transparent 60%);
+    pointer-events:none;
+  }
+  .hero-grid{display:grid;grid-template-columns:1.05fr 0.95fr;gap:56px;align-items:center;position:relative;}
+  .hero h1{font-size:48px;line-height:1.08;font-weight:600;margin:18px 0 20px;}
+  .hero h1 em{font-style:normal;color:var(--brass-bright);}
+  .hero p.sub{font-size:17px;color:var(--slate);max-width:480px;margin-bottom:32px;}
+  .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;}
+  .hero-note{margin-top:16px;font-size:13px;color:var(--slate);font-family:'IBM Plex Mono';}
+
+  /* Terminal signature panel */
+  .terminal{
+    background:var(--ink-soft);border:1px solid var(--ink-line);border-radius:6px;
+    overflow:hidden;box-shadow:0 30px 60px -20px rgba(0,0,0,0.6);
+  }
+  .terminal-bar{
+    display:flex;align-items:center;gap:7px;padding:11px 14px;
+    border-bottom:1px solid var(--ink-line);background:#12161D;
+  }
+  .terminal-dot{width:9px;height:9px;border-radius:50%;background:#3A4150;}
+  .terminal-title{margin-left:8px;font-family:'IBM Plex Mono';font-size:12px;color:var(--slate);}
+  .terminal-body{padding:22px 20px;font-family:'IBM Plex Mono';font-size:13px;min-height:290px;}
+  .t-line{margin-bottom:11px;opacity:0;animation:fadein .4s forwards;}
+  .t-prompt{color:var(--brass-bright);}
+  .t-task{color:var(--white);}
+  .t-label{color:var(--teal);}
+  .t-dim{color:var(--slate);}
+  .t-cursor{display:inline-block;width:7px;height:14px;background:var(--brass-bright);vertical-align:-2px;animation:blink 1s steps(1) infinite;}
+  @keyframes fadein{to{opacity:1;}}
+  @keyframes blink{50%{opacity:0;}}
+
+  /* ── Sections shared ── */
+  section{padding:96px 0;}
+  .section-head{max-width:600px;margin-bottom:52px;}
+  .section-head h2{font-size:32px;font-weight:600;margin-top:14px;}
+  .section-head p{color:var(--slate);font-size:16px;margin-top:14px;}
+
+  /* How it works */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
+  .step{border:1px solid var(--ink-line);border-radius:6px;padding:28px 24px;background:var(--ink-soft);}
+  .step-num{font-family:'IBM Plex Mono';font-size:13px;color:var(--brass-bright);margin-bottom:16px;}
+  .step h3{font-size:18px;margin-bottom:10px;}
+  .step p{color:var(--slate);font-size:14.5px;}
+
+  /* Features on paper */
+  .paper-section{background:var(--paper);color:var(--ink-text);}
+  .paper-section .eyebrow{color:#9A6A20;}
+  .paper-section .slate{color:#6B6357;}
+  .feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--paper-line);border:1px solid var(--paper-line);border-radius:6px;overflow:hidden;}
+  .feature{background:var(--paper);padding:30px 28px;}
+  .feature h3{font-size:17px;margin-bottom:8px;}
+  .feature p{color:#6B6357;font-size:14.5px;}
+
+  /* Pricing */
+  .toggle{
+    display:inline-flex;border:1px solid var(--ink-line);border-radius:99px;padding:4px;margin-bottom:44px;
+  }
+  .toggle button{
+    font-family:'IBM Plex Mono';font-size:13px;padding:9px 20px;border-radius:99px;border:none;
+    background:transparent;color:var(--slate);cursor:pointer;transition:.15s;
+  }
+  .toggle button.active{background:var(--brass-bright);color:var(--ink);font-weight:600;}
+  .plans{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
+  .plans.hidden{display:none;}
+  .plan-card{
+    border:1px solid var(--ink-line);border-radius:8px;padding:32px 28px;background:var(--ink-soft);
+    display:flex;flex-direction:column;
+  }
+  .plan-card.featured{border-color:var(--brass-bright);background:linear-gradient(180deg,#1B1509,var(--ink-soft) 40%);}
+  .plan-name{font-family:'IBM Plex Mono';font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--brass-bright);}
+  .plan-price{font-size:40px;font-weight:600;font-family:'Space Grotesk';margin:14px 0 2px;}
+  .plan-price span{font-size:15px;color:var(--slate);font-family:'IBM Plex Sans';font-weight:400;}
+  .plan-desc{color:var(--slate);font-size:14px;margin-bottom:22px;}
+  .plan-list{list-style:none;padding:0;margin:0 0 26px;flex:1;}
+  .plan-list li{font-size:14.5px;padding:9px 0;border-top:1px solid var(--ink-line);display:flex;gap:10px;}
+  .plan-list li:first-child{border-top:none;}
+  .plan-list li::before{content:"—";color:var(--teal);flex-shrink:0;}
+  .setup-note{margin-top:20px;font-size:13px;color:var(--slate);font-family:'IBM Plex Mono';text-align:center;}
+
+  /* FAQ */
+  .faq-item{border-top:1px solid var(--ink-line);padding:22px 0;}
+  .faq-item:last-child{border-bottom:1px solid var(--ink-line);}
+  .faq-item h3{font-size:16px;font-weight:600;margin-bottom:8px;}
+  .faq-item p{color:var(--slate);font-size:14.5px;max-width:640px;}
+
+  /* Final CTA */
+  .cta-band{background:var(--ink-soft);border-top:1px solid var(--ink-line);border-bottom:1px solid var(--ink-line);text-align:center;padding:84px 0;}
+  .cta-band h2{font-size:30px;margin-bottom:18px;}
+  .cta-band p{color:var(--slate);margin-bottom:30px;}
+
+  footer{padding:40px 0;color:var(--slate);font-size:13px;display:flex;justify-content:space-between;align-items:center;}
+
+  /* ── Modal ── */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(6,8,11,0.72);backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--ink-soft);border:1px solid var(--ink-line);border-radius:8px;
+    width:100%;max-width:440px;padding:32px;position:relative;max-height:90vh;overflow-y:auto;
+  }
+  .modal-close{position:absolute;top:18px;right:18px;background:none;border:none;color:var(--slate);font-size:20px;cursor:pointer;line-height:1;}
+  .modal h3{font-size:20px;margin-bottom:6px;}
+  .modal .plan-chip{
+    display:inline-block;font-family:'IBM Plex Mono';font-size:12px;color:var(--brass-bright);
+    border:1px solid var(--brass-bright);border-radius:99px;padding:4px 12px;margin-bottom:18px;
+  }
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;color:var(--slate);margin-bottom:6px;font-family:'IBM Plex Mono';}
+  .field input{
+    width:100%;background:var(--ink);border:1px solid var(--ink-line);border-radius:4px;
+    padding:11px 12px;color:var(--white);font-size:14.5px;font-family:'IBM Plex Sans';
+  }
+  .field input:focus{outline:none;border-color:var(--brass-bright);}
+  .field-hint{font-size:12px;color:var(--slate);margin-top:5px;}
+  .form-error{color:var(--danger);font-size:13.5px;margin-bottom:14px;display:none;}
+  .form-error.show{display:block;}
+  .form-msg-ok{color:var(--teal);font-size:13.5px;margin-bottom:14px;}
+
+  /* Welcome overlay (post-checkout) */
+  .welcome-box{max-width:480px;text-align:center;}
+  .spinner{
+    width:34px;height:34px;border:3px solid var(--ink-line);border-top-color:var(--brass-bright);
+    border-radius:50%;margin:0 auto 22px;animation:spin 0.9s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .credential-box{
+    background:var(--ink);border:1px solid var(--ink-line);border-radius:6px;padding:18px;
+    text-align:left;font-family:'IBM Plex Mono';font-size:13.5px;margin:20px 0;line-height:1.9;
+  }
+  .credential-box b{color:var(--brass-bright);}
+
+  @media(max-width:860px){
+    .hero-grid{grid-template-columns:1fr;}
+    .hero h1{font-size:36px;}
+    .steps{grid-template-columns:1fr;}
+    .feature-grid{grid-template-columns:1fr;}
+    .plans{grid-template-columns:1fr;}
+    .nav-links{display:none;}
+    footer{flex-direction:column;gap:10px;text-align:center;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ CONFIG ══════════════
+     Set this to your deployed BA-Agent-X API origin before publishing.
+     If the marketing site and API share the same domain, leave it as ''.
+-->
+<script>
+  window.BA_API_BASE = "ba-agent-x-production.up.railway.app";
+</script>
+
+<nav>
+  <div class="wrap">
+    <div class="logo"><span class="logo-mark">BA</span> BA-Agent-X</div>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a href="#pricing" class="btn btn-brass">Start free trial</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">AI Business Analyst, on call</div>
+      <h1>Ask your business a question.<br><em>Get a real answer.</em></h1>
+      <p class="sub">BA-Agent-X reads your sales and customer data and reasons through it like a analyst would — root causes, not just charts. No dashboards to build. No analyst to hire.</p>
+      <div class="hero-ctas">
+        <a href="#pricing" class="btn btn-brass">Start 14-day free trial</a>
+        <a href="#how" class="btn btn-ghost">See how it works</a>
+      </div>
+      <div class="hero-note">No credit card charged until your trial ends · Cancel anytime</div>
+    </div>
+
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dot"></div><div class="terminal-dot"></div><div class="terminal-dot"></div>
+        <div class="terminal-title">run-agent · live</div>
+      </div>
+      <div class="terminal-body" id="terminalBody"></div>
+    </div>
+  </div>
+</header>
+
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">How it works</div>
+      <h2>From raw data to a decision, in three steps</h2>
+      <p>The agent connects to the data you already have. It doesn't need you to build a dashboard first.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Connect your data</h3>
+        <p>Point it at your sales and customer records. Each company's data is fully isolated — nobody else ever sees it, and it never trains a shared model.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Ask in plain English</h3>
+        <p>"Why did West region revenue drop in March?" The agent plans its own investigation — no query language, no filters to configure.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Get insights + next steps</h3>
+        <p>Back comes a structured report: root causes, confidence level, and ranked recommendations — ready to hand to your team.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-section">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Built to be trusted with real data</div>
+      <h2>Not a chatbot wrapper</h2>
+      <p class="slate">Every account runs on infrastructure built for handling more than one company's data at once, safely.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature">
+        <h3>Strict data isolation</h3>
+        <p>Every query is scoped to your company automatically. There is no way for one client's data to leak into another's session.</p>
+      </div>
+      <div class="feature">
+        <h3>Explains its reasoning</h3>
+        <p>Reports include a confidence score and the root causes behind each insight — not just a number with no context.</p>
+      </div>
+      <div class="feature">
+        <h3>Role-based access</h3>
+        <p>Admins manage the team. Analysts run the agent. Viewers get read-only access to reports. You control who sees what.</p>
+      </div>
+      <div class="feature">
+        <h3>Own your account</h3>
+        <p>Export logs, rotate API keys, and add or remove teammates yourself — no ticket to file, no waiting on us.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Pricing</div>
+      <h2>Two ways to get started</h2>
+      <p>Pay monthly and set yourself up in minutes, or have us do the onboarding for you.</p>
+    </div>
+
+    <div class="toggle">
+      <button class="active" data-tab="monthly" onclick="switchTab('monthly')">Monthly subscription</button>
+      <button data-tab="setup" onclick="switchTab('setup')">Setup + maintenance</button>
+    </div>
+
+    <div class="plans" id="plans-monthly">
+      <div class="plan-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">$149<span>/month</span></div>
+        <div class="plan-desc">For a single team getting the agent onto their own data.</div>
+        <ul class="plan-list">
+          <li>1 company workspace</li>
+          <li>Up to 3 users</li>
+          <li>Core agent + all built-in tools</li>
+          <li>Email support</li>
+          <li>14-day free trial</li>
+        </ul>
+        <button class="btn btn-ghost btn-block" onclick="openSignup('starter','Starter — $149/mo')">Start free trial</button>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-name">Growth</div>
+        <div class="plan-price">$349<span>/month</span></div>
+        <div class="plan-desc">For teams running the agent across departments.</div>
+        <ul class="plan-list">
+          <li>1 company workspace</li>
+          <li>Unlimited users</li>
+          <li>Core agent + all built-in tools</li>
+          <li>Priority support + data import help</li>
+          <li>14-day free trial</li>
+        </ul>
+        <button class="btn btn-brass btn-block" onclick="openSignup('growth','Growth — $349/mo')">Start free trial</button>
+      </div>
+    </div>
+
+    <div class="plans hidden" id="plans-setup">
+      <div class="plan-card" style="grid-column:1/-1;max-width:520px;">
+        <div class="plan-name">Setup + Maintenance</div>
+        <div class="plan-price">$1,200<span> one-time</span></div>
+        <div class="plan-desc">We onboard your company and migrate your data for you, then keep it running.</div>
+        <ul class="plan-list">
+          <li>Guided onboarding call</li>
+          <li>We migrate your existing data in</li>
+          <li>Unlimited users</li>
+          <li>Ongoing hosting + maintenance included</li>
+        </ul>
+        <button class="btn btn-brass btn-block" onclick="openSignup('setup_maintenance','Setup + Maintenance')">Get started — $1,200 + $99/mo</button>
+        <div class="setup-note">$99/month maintenance billed starting today, no trial</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">FAQ</div>
+      <h2>Good to know</h2>
+    </div>
+    <div class="faq-item">
+      <h3>Do I need a credit card to start the trial?</h3>
+      <p>Yes — Stripe requires a card to start a trial, but you won't be charged until the 14 days are up, and you can cancel anytime before then from your account.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Can another company see our data?</h3>
+      <p>No. Every workspace is isolated at the database level — every request is automatically scoped to your company, with no shared access between tenants.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Can I switch plans later?</h3>
+      <p>Yes, reach out to support and we'll move you between plans — your data and users stay exactly where they are.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What happens if a payment fails?</h3>
+      <p>We'll retry automatically and email you. Access pauses only if a subscription lapses fully — your data is never deleted.</p>
+    </div>
+  </div>
+</section>
+
+<div class="cta-band">
+  <div class="wrap">
+    <h2>Your data already has the answer.</h2>
+    <p>Start free for 14 days — no setup required.</p>
+    <a href="#pricing" class="btn btn-brass">Start free trial</a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap" style="display:flex;justify-content:space-between;width:100%;">
+    <div>© 2026 BA-Agent-X</div>
+    <div class="mono">Built on BA-Agent-X Enterprise</div>
+  </div>
+</footer>
+
+<!-- ══════════════ Signup modal ══════════════ -->
+<div class="modal-overlay" id="signupOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeSignup()">&times;</button>
+    <h3>Create your workspace</h3>
+    <div class="plan-chip" id="planChip">Starter</div>
+    <div class="form-error" id="formError"></div>
+    <form id="signupForm" onsubmit="return submitSignup(event)">
+      <div class="field">
+        <label>Company name</label>
+        <input type="text" id="companyName" required placeholder="Acme Inc.">
+      </div>
+      <div class="field">
+        <label>Company code (used to log in)</label>
+        <input type="text" id="companySlug" required pattern="[a-z0-9_-]+" placeholder="acme">
+        <div class="field-hint">Lowercase letters, numbers, and dashes only.</div>
+      </div>
+      <div class="field">
+        <label>Work email</label>
+        <input type="email" id="adminEmail" required placeholder="you@acme.com">
+      </div>
+      <div class="field">
+        <label>Admin username</label>
+        <input type="text" id="adminUsername" required value="admin">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="adminPassword" required minlength="8" placeholder="At least 8 characters">
+      </div>
+      <button type="submit" class="btn btn-brass btn-block" id="signupSubmitBtn">Continue to payment</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════ Post-checkout welcome overlay ══════════════ -->
+<div class="modal-overlay" id="welcomeOverlay">
+  <div class="modal welcome-box">
+    <div id="welcomeLoading">
+      <div class="spinner"></div>
+      <h3>Setting up your workspace…</h3>
+      <p style="color:var(--slate);font-size:14px;">This usually takes a few seconds after payment.</p>
+    </div>
+    <div id="welcomeReady" style="display:none;">
+      <h3>You're all set 🎉</h3>
+      <p style="color:var(--slate);font-size:14px;">Save these details — you'll need them to log in.</p>
+      <div class="credential-box">
+        Company code: <b id="wCode"></b><br>
+        Username: <b id="wUser"></b><br>
+        Password: the one you just chose
+      </div>
+      <a href="/ui" class="btn btn-brass btn-block">Go to your workspace</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = window.BA_API_BASE || "";
+
+  // ── Hero terminal ticker ──
+  const script = [
+    {t:'prompt', text:'$ run-agent '}, {t:'task', text:'"why did West region revenue drop in March?"'},
+    {t:'dim', text:'planning… 3 tools selected'},
+    {t:'label', text:'→ insight'}, {t:'dim', text:'  West conversion rate fell 18% after Feb 22'},
+    {t:'label', text:'→ root cause'}, {t:'dim', text:'  checkout latency regression, confidence 0.87'},
+    {t:'label', text:'→ recommendation'}, {t:'dim', text:'  roll back checkout deploy #4471'},
+    {t:'dim', text:'done in 1.8s'},
+  ];
+  function typeTerminal(){
+    const el = document.getElementById('terminalBody');
+    el.innerHTML = '';
+    let delay = 0;
+    script.forEach((line) => {
+      const div = document.createElement('div');
+      div.className = 't-line t-' + line.t;
+      div.textContent = line.text;
+      div.style.animationDelay = delay + 'ms';
+      el.appendChild(div);
+      delay += 260;
+    });
+    const cursor = document.createElement('span');
+    cursor.className = 't-cursor';
+    el.appendChild(cursor);
+  }
+  typeTerminal();
+  setInterval(typeTerminal, 9000);
+
+  // ── Pricing tabs ──
+  function switchTab(tab){
+    document.querySelectorAll('.toggle button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.getElementById('plans-monthly').classList.toggle('hidden', tab !== 'monthly');
+    document.getElementById('plans-setup').classList.toggle('hidden', tab !== 'setup');
+  }
+
+  // ── Signup modal ──
+  let selectedPlan = 'starter';
+  function openSignup(planId, label){
+    selectedPlan = planId;
+    document.getElementById('planChip').textContent = label;
+    document.getElementById('formError').classList.remove('show');
+    document.getElementById('signupOverlay').classList.add('open');
+  }
+  function closeSignup(){
+    document.getElementById('signupOverlay').classList.remove('open');
+  }
+  document.getElementById('companyName').addEventListener('input', (e) => {
+    const slugField = document.getElementById('companySlug');
+    if (!slugField.dataset.touched) {
+      slugField.value = e.target.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+  });
+  document.getElementById('companySlug').addEventListener('input', (e) => { e.target.dataset.touched = '1'; });
+
+  async function submitSignup(e){
+    e.preventDefault();
+    const btn = document.getElementById('signupSubmitBtn');
+    const errEl = document.getElementById('formError');
+    errEl.classList.remove('show');
+    btn.disabled = true;
+    btn.textContent = 'Redirecting to payment…';
+
+    const body = {
+      company_name: document.getElementById('companyName').value.trim(),
+      slug: document.getElementById('companySlug').value.trim(),
+      admin_username: document.getElementById('adminUsername').value.trim(),
+      admin_password: document.getElementById('adminPassword').value,
+      admin_email: document.getElementById('adminEmail').value.trim(),
+      plan: selectedPlan,
+    };
+
+    try{
+      const res = await fetch(`${API_BASE}/signup`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error((data && (data.detail || (data.data && data.data.message))) || 'Something went wrong. Please try again.');
+      }
+      // Redirect to Stripe Checkout
+      window.location.href = data.data.checkout_url;
+    } catch(err){
+      errEl.textContent = typeof err.message === 'string' ? err.message : 'Something went wrong. Please try again.';
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Continue to payment';
+    }
+    return false;
+  }
+
+  // ── Post-checkout welcome flow ──
+  (function checkWelcome(){
+    const params = new URLSearchParams(window.location.search);
+    const signupId = params.get('signup_id');
+    if (!signupId) return;
+
+    document.getElementById('welcomeOverlay').classList.add('open');
+    let attempts = 0;
+    const poll = setInterval(async () => {
+      attempts++;
+      try {
+        const res = await fetch(`${API_BASE}/signup/${signupId}/status`);
+        const data = await res.json();
+        if (data.data && data.data.ready) {
+          clearInterval(poll);
+          document.getElementById('welcomeLoading').style.display = 'none';
+          document.getElementById('welcomeReady').style.display = 'block';
+          document.getElementById('wCode').textContent = data.data.company_slug;
+          document.getElementById('wUser').textContent = data.data.admin_username;
+        }
+      } catch(e) { /* keep polling */ }
+      if (attempts > 20) clearInterval(poll); // ~60s timeout — webhook may be delayed, contact support
+    }, 3000);
+  })();
+</script>
+
+</body>
+</html>
