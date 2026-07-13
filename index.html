@@ -178,7 +178,10 @@
   .cta-band h2{font-size:30px;margin-bottom:18px;}
   .cta-band p{color:var(--slate);margin-bottom:30px;}
 
-  footer{padding:40px 0;color:var(--slate);font-size:13px;display:flex;justify-content:space-between;align-items:center;}
+  /* Footer + LinkedIn badge */
+  footer{padding:40px 0;color:var(--slate);font-size:13px;}
+  .footer-row{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;}
+  .footer-badge{display:flex;align-items:center;}
 
   /* ── Modal ── */
   .modal-overlay{
@@ -228,7 +231,7 @@
     .feature-grid{grid-template-columns:1fr;}
     .plans{grid-template-columns:1fr;}
     .nav-links{display:none;}
-    footer{flex-direction:column;gap:10px;text-align:center;}
+    .footer-row{flex-direction:column;text-align:center;}
   }
 </style>
 </head>
@@ -426,9 +429,17 @@ window.BA_API_BASE = "https://ba-agent-x-production.up.railway.app";
 </div>
 
 <footer>
-  <div class="wrap" style="display:flex;justify-content:space-between;width:100%;">
-    <div>© 2026 BA-Agent-X</div>
-    <div class="mono">Built on BA-Agent-X Enterprise</div>
+  <div class="wrap footer-row">
+    <div>
+      <div>© 2026 BA-Agent-X</div>
+      <div class="mono">Built on BA-Agent-X Enterprise</div>
+    </div>
+    <!-- ══════════════ LinkedIn profile badge ══════════════ -->
+    <div class="footer-badge">
+      <div class="badge-base LI-profile-badge" data-locale="en_US" data-size="large" data-theme="dark" data-type="HORIZONTAL" data-vanity="rehan-r-9ba701260" data-version="v1">
+        <a class="badge-base__link LI-simple-link" href="https://www.linkedin.com/in/rehan-r-9ba701260?trk=profile-badge">Rehan R</a>
+      </div>
+    </div>
   </div>
 </footer>
 
@@ -606,7 +617,9 @@ window.BA_API_BASE = "https://ba-agent-x-production.up.railway.app";
     }, 3000);
   })();
 </script>
+
+<!-- ══════════════ LinkedIn badge loader (Step 1 script — load once) ══════════════ -->
 <script src="https://platform.linkedin.com/badges/js/profile.js" async defer type="text/javascript"></script>
-<div class="badge-base LI-profile-badge" data-locale="en_US" data-size="large" data-theme="dark" data-type="HORIZONTAL" data-vanity="rehan-r-9ba701260" data-version="v1"><a class="badge-base__link LI-simple-link" href="https://www.linkedin.com/in/rehan-r-9ba701260?trk=profile-badge">Rehan R</a></div>
+
 </body>
 </html>
